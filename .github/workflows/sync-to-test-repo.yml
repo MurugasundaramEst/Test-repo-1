@@ -1,0 +1,28 @@
+name: Sync main -> Test-repo-1
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  sync:
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.pull_request.merged == true && github.event.pull_request.head.ref == 'dev')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Push main to Test-repo-1 main
+        env:
+          TOKEN: ${{ secrets.TARGET_REPO_TOKEN }}
+        run: |
+          git push --force \
+            "https://x-access-token:${TOKEN}@github.com/MurugasundaramEst/Test-repo-1.git" \
+            HEAD:main
